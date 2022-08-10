@@ -1,0 +1,7 @@
+dependencies:
+  - pytorch
+  - pandas
+  - python=3.8
+  - pip
+  - pip:
+    - oracle-ads
