@@ -2,6 +2,11 @@ dependencies:
   - pytorch
   - pandas
   - python=3.8
+  - conda-forge::pydicom
+  - jupyterlab
   - pip
   - pip:
     - oracle-ads
+    - nibabel
+    - ipywidgets
+name: spine-kaggle
