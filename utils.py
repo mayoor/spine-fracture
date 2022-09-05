@@ -5,10 +5,15 @@ import numpy as np
 from functools import lru_cache
 import os
 import pandas as pd
+from pydicom.pixel_data_handlers.util import apply_voi_lut
+import cv2
+# norm_image = cv2.normalize(image, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
 
-def show_dcm_image(image, scale=False):
+def show_dcm_image(image, normalize=False):
     ds = dcmread(image)
-    return ds.pixel_array
+    image = cv2.normalize(apply_voi_lut(ds.pixel_array, ds), None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F) if normalize else apply_voi_lut(ds.pixel_array, ds)
+    # image = np.where(image > 0 , 255, 0) 
+    return ds,  image#apply_voi_lut(ds.pixel_array, ds)
 
 def show_slices_for_patient(segmentation_info, plot_dim=(3,10), root_folder="train_images", **kwargs):
     fig, axs = plt.subplots(plot_dim[0], plot_dim[1], **kwargs)
@@ -18,15 +23,16 @@ def show_slices_for_patient(segmentation_info, plot_dim=(3,10), root_folder="tra
             if index == len(segmentation_info):
                 return fig, axs
             record = segmentation_info.iloc[index]
-            axs[r,c].imshow(show_dcm_image(f'{root_folder}/{record.StudyInstanceUID}/{record.slice_number}.dcm'))
+            axs[r,c].imshow(show_dcm_image(f'{root_folder}/{record.StudyInstanceUID}/{record.slice_number}.dcm')[1], cmap="gray")
             axs[r,c].add_patch(Rectangle((record.x,record.y),record.width,record.height,linewidth=1,edgecolor='r',facecolor='none'))
     return fig, axs
 
-def show_dcm_image_with_bounding_box(image, x, y, width, height):
-    arr = show_dcm_image(image)
-    plt.imshow(arr, cmap="gray")
-    plt.gca().add_patch(Rectangle((x,y),width,height,linewidth=1,edgecolor='r',facecolor='none'))
-    return plt
+def show_dcm_image_with_bounding_box(image, x, y, width, height, **kwargs):
+    _, arr = show_dcm_image(image)
+    fig, ax = plt.subplots(**kwargs)
+    ax.imshow(arr, cmap="gray")
+    ax.add_patch(Rectangle((x,y),width,height,linewidth=1,edgecolor='r',facecolor='none'))
+    return ax
 
 def get_boundingbox_records_sample_by_fracture_count(df_train, numsample = 1, rand_state=42):
     np.random.seed(rand_state)

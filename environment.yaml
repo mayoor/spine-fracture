@@ -3,10 +3,13 @@ dependencies:
   - pandas
   - python=3.8
   - conda-forge::pydicom
+  - conda-forge::gdcm
   - jupyterlab
   - pip
   - pip:
     - oracle-ads
     - nibabel
     - ipywidgets
+    - opencv-python
+    - pylibjpeg-libjpeg
 name: spine-kaggle
